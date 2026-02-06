@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine? 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 30px;
+            animation: float 4s ease-in infinite;
+            opacity: 0;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            color: #ff1744;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .question {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .buttons-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .button-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #yesBtn {
+            background: linear-gradient(135deg, #ff1744 0%, #f50057 100%);
+            color: white;
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 23, 68, 0.4);
+        }
+
+        #noBtn {
+            background: linear-gradient(135deg, #757575 0%, #9e9e9e 100%);
+            color: white;
+        }
+        
+        #noBtn.moving {
+            position: absolute;
+            z-index: 2;
+        }
+
+        .guilt-message {
+            font-size: 1.8em;
+            color: #ff1744;
+            margin-top: 20px;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        .celebration {
+            display: none;
+        }
+
+        .celebration.active {
+            display: block;
+            animation: bounceIn 0.6s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .celebration h2 {
+            font-size: 3em;
+            color: #ff1744;
+            margin-bottom: 20px;
+        }
+
+        .celebration p {
+            font-size: 1.5em;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff1744;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .attempt-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #ff1744;
+        }
+    </style>
+</head>
+<body>
+    <div class="attempt-counter">Escape Attempts: <span id="attempts">0</span></div>
+    
+    <div class="container">
+        <div id="questionSection">
+            <h1>💕 Hey Samiksha!! 💕</h1>
+            <p class="question" id="questionText">Will you be my Valentine?</p>
+            <div class="buttons-container" id="buttonsContainer">
+                <div class="button-wrapper" id="buttonWrapper">
+                    <button id="yesBtn">Yes! 💖</button>
+                    <button id="noBtn">No</button>
+                </div>
+            </div>
+            <p class="guilt-message" id="guiltMessage"></p>
+        </div>
+
+        <div class="celebration" id="celebration">
+            <h2>🎉 YAAAYYY! 🎉</h2>
+            <p>I knew you'd say yes Sam! 💕</p>
+            <p style="margin-top: 20px;">You just made me the happiest person ever! 🥰</p>
+            <p style="margin-top: 30px; font-size: 3em;">❤️💕💖💗💓💝</p>
+        </div>
+    </div>
+
+    <script>
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const questionText = document.getElementById('questionText');
+        const guiltMessage = document.getElementById('guiltMessage');
+        const celebration = document.getElementById('celebration');
+        const questionSection = document.getElementById('questionSection');
+        const attemptsSpan = document.getElementById('attempts');
+        const buttonsContainer = document.getElementById('buttonsContainer');
+        const buttonWrapper = document.getElementById('buttonWrapper');
+
+        let attempts = 0;
+        let yesBtnSize = 1;
+        let noBtnSize = 1;
+        let isNoButtonMoving = false;
+
+        const guiltMessages = [
+            "🥺 Are you sure?",
+            "😢 Please reconsider...",
+            "💔 You're breaking my heart...",
+            "😭 But... but... I made this whole website for you!",
+            "🥹 Just give me a chance?",
+            "😔 I even learned to code for this...",
+            "💐 What if I get you flowers?",
+            "🍫 Chocolates? I'll get chocolates!",
+            "🌹 I'll give you all the roses in the world!",
+            "😩 The 'No' button is getting really tired...",
+            "🙏 Pretty please with a cherry on top?",
+            "💝 My heart can't take much more of this!",
+            "😖 I'm running out of ways to ask!",
+            "🎁 I'll give you the best Valentine's Day ever!",
+            "😇 You know you want to say yes...",
+"😱 The button is getting dizzy from all this running!",
+"🎭 You're making me look desperate here...",
+"🤔 What if I told you I practiced this speech 100 times?",
+"💌 I even bought a new outfit for our date...",
+"🌟 You're literally my only hope right now...",
+"😅 Okay fine, I'll beg. PLEASE be my Valentine!"
+        ];
+
+        const escalatingQuestions = [
+            "Will you be my Valentine?",
+            "Are you really going to say no?",
+            "Come on, you know you want to say yes...",
+            "Pretty please be my Valentine? 🥺",
+            "What if I promised to be the best Valentine ever?",
+            "Can you really resist this adorable website?",
+            "I'm not giving up! Be my Valentine? 💕"
+        ];
+
+        // Create floating hearts background
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            heart.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 7000);
+        }
+
+        setInterval(createHeart, 300);
+
+        // Move No button away
+        function moveNoButton() {
+            // On first move, convert to absolute positioning
+            if (!isNoButtonMoving) {
+                const noBtnRect = noBtn.getBoundingClientRect();
+                const containerRect = buttonsContainer.getBoundingClientRect();
+                
+                noBtn.classList.add('moving');
+                noBtn.style.left = (noBtnRect.left - containerRect.left) + 'px';
+                noBtn.style.top = (noBtnRect.top - containerRect.top) + 'px';
+                isNoButtonMoving = true;
+            }
+            
+            const containerRect = buttonsContainer.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
+            const yesRect = yesBtn.getBoundingClientRect();
+            
+            const maxX = containerRect.width - btnRect.width;
+            const maxY = containerRect.height - btnRect.height;
+            
+            let randomX, randomY;
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            // Keep trying until we find a position that doesn't overlap with Yes button
+            do {
+                randomX = Math.random() * maxX;
+                randomY = Math.random() * maxY;
+                attempts++;
+                
+                // Calculate if this position would overlap with Yes button
+                const noLeft = randomX;
+                const noRight = randomX + btnRect.width;
+                const noTop = randomY;
+                const noBottom = randomY + btnRect.height;
+                
+                const yesLeft = yesRect.left - containerRect.left;
+                const yesRight = yesLeft + yesRect.width;
+                const yesTop = yesRect.top - containerRect.top;
+                const yesBottom = yesTop + yesRect.height;
+                
+                // Check if there's no overlap (with some padding)
+                const noOverlap = (noRight < yesLeft - 10) || 
+                                 (noLeft > yesRight + 10) || 
+                                 (noBottom < yesTop - 10) || 
+                                 (noTop > yesBottom + 10);
+                
+                if (noOverlap || attempts >= maxAttempts) {
+                    break;
+                }
+            } while (true);
+            
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+        }
+
+        // Handle No button interactions
+        noBtn.addEventListener('mouseenter', handleNoAttempt);
+        noBtn.addEventListener('touchstart', handleNoAttempt);
+        noBtn.addEventListener('click', handleNoAttempt);
+
+        function handleNoAttempt(e) {
+            e.preventDefault();
+            attempts++;
+            attemptsSpan.textContent = attempts;
+            
+            // Move the button
+            moveNoButton();
+            
+            // Increase Yes button size, decrease No button size
+            yesBtnSize += 0.15;
+            noBtnSize = Math.max(0.3, noBtnSize - 0.08);
+            
+            yesBtn.style.transform = `scale(${yesBtnSize})`;
+            noBtn.style.transform = `scale(${noBtnSize})`;
+            
+            // Show guilt message
+            const messageIndex = Math.min(attempts - 1, guiltMessages.length - 1);
+            guiltMessage.textContent = guiltMessages[messageIndex];
+            
+            // Update question text
+            const questionIndex = Math.min(Math.floor(attempts / 2), escalatingQuestions.length - 1);
+            questionText.textContent = escalatingQuestions[questionIndex];
+            
+            // Add shake animation to question
+            questionText.style.animation = 'none';
+            setTimeout(() => {
+                questionText.style.animation = 'pulse 1.5s ease-in-out infinite';
+            }, 10);
+        }
+
+        // Handle Yes button
+        yesBtn.addEventListener('click', () => {
+            questionSection.style.display = 'none';
+            celebration.classList.add('active');
+            
+            // Create confetti
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti');
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = ['#ff1744', '#f50057', '#ff4081', '#ffeb3b', '#4caf50'][Math.floor(Math.random() * 5)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+            
+            // Create more hearts
+            for (let i = 0; i < 50; i++) {
+                setTimeout(createHeart, i * 100);
+            }
+        });
+    </script>
+</body>
+</html>
